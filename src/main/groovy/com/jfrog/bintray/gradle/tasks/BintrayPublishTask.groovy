@@ -7,6 +7,7 @@ import com.jfrog.bintray.gradle.tasks.entities.Version
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskCollection
 
 import static groovyx.net.http.ContentType.JSON
 import static groovyx.net.http.Method.POST
@@ -26,7 +27,7 @@ class BintrayPublishTask extends DefaultTask {
     }
 
     private void signPublishAndSync() {
-        HashSet<BintrayUploadTask> tasks = project.getTasksByName(BintrayUploadTask.TASK_NAME, true)
+        TaskCollection<BintrayUploadTask> tasks = project.tasks.withType(BintrayUploadTask)
         for (BintrayUploadTask task : tasks) {
             if (task.getEnabled() && task.getDidWork()) {
                 Package pkg = new Package(task.packageName)
