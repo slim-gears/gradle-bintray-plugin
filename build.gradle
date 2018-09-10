@@ -1,4 +1,4 @@
-group = 'com.jfrog.bintray.gradle'
+group = 'com.slimgears.bintray.gradle'
 version = currentVersion
 
 buildscript {
@@ -134,7 +134,7 @@ artifactory {
         }
         defaults {
             publications 'mavenJava'
-            properties = ['bintray.repo': 'jfrog/jfrog-jars', 'bintray.package': 'gradle-bintray-plugin', 'bintray.version': version.toString()]
+            properties = ['bintray.repo': 'slim-gears/bintray', 'bintray.package': 'gradle-bintray-plugin', 'bintray.version': version.toString()]
         }
     }
 }
@@ -144,12 +144,13 @@ bintray {
     key = project.hasProperty('bintrayKey') ? project.bintrayKey : System.getenv('BINTRAY_KEY')
     publications = ['mavenJava']
     pkg {
-        repo = 'jfrog-jars'
-        userOrg = 'jfrog'
+        userOrg = 'slim-gears'
+        repo = 'maven'
         name = 'gradle-bintray-plugin'
         licenses = ['Apache-2.0']
         version {
-            attributes = ['gradle-plugin': 'com.jfrog.bintray:com.jfrog.bintray.gradle:gradle-bintray-plugin']
+            name = project.version
+            //attributes = ['gradle-plugin': 'com.slimgears.bintray.gradle:com.jfrog.bintray.gradle:gradle-bintray-plugin']
         }
     }
 }

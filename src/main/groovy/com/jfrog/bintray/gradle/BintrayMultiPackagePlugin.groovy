@@ -16,7 +16,7 @@ class BintrayMultiPackagePlugin implements Plugin<Project> {
             @Override
             void projectsEvaluated(Gradle gradle) {
                 super.projectsEvaluated(gradle)
-                def bintrayUploadTask = project.task('bintrayUpload')
+                def bintrayUploadTask = project.task('bintrayUpload', group: 'publishing')
                 extension.packages.each { pkg ->
                     def taskName = "${pkg.name}BintrayUpload"
                     BintrayUploadTask packageUploadTask = project.tasks.create(name: taskName, type: BintrayUploadTask) as BintrayUploadTask
