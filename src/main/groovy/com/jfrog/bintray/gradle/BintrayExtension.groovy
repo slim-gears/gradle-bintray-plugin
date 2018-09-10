@@ -14,7 +14,7 @@ class BintrayExtension {
 
     String key
 
-    PackageConfig pkg = new PackageConfig()
+    List<PackageConfig> packages = []
 
     String[] configurations
 
@@ -32,8 +32,15 @@ class BintrayExtension {
         this.project = project
     }
 
-    def pkg(Closure closure) {
+    def getPkg() {
+        packages.isEmpty() ? null : packages.first()
+    }
+
+    def pkg(Closure<PackageConfig> closure) {
+        def pkg = new PackageConfig()
         ConfigureUtil.configure(closure, pkg)
+        packages.add(pkg)
+        pkg
     }
 
     def filesSpec(Closure closure) {
@@ -43,6 +50,7 @@ class BintrayExtension {
     }
 
     class PackageConfig {
+        String[] publications
         String repo
         //An alternative user for the package
         String userOrg

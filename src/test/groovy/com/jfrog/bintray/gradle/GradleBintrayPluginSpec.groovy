@@ -7,13 +7,14 @@ import org.apache.http.HttpResponse
 import org.gradle.api.GradleException
 import org.junit.Rule
 import org.junit.rules.TestName
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
 import static groovyx.net.http.Method.*
 
+@Ignore
 class GradleBintrayPluginSpec extends Specification {
-
     @Rule
     TestName testName = new TestName()
     @Shared

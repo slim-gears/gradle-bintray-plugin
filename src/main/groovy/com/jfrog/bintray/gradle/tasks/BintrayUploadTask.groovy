@@ -1,6 +1,7 @@
 package com.jfrog.bintray.gradle.tasks
 
 import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.BintrayExtension.PackageConfig
 import com.jfrog.bintray.gradle.BintrayHttpClientFactory
 import com.jfrog.bintray.gradle.BintrayPlugin
 import com.jfrog.bintray.gradle.Utils
@@ -33,7 +34,6 @@ class BintrayUploadTask extends DefaultTask {
     static final String GROUP = 'publishing'
     static final String DESCRIPTION = 'Publishes artifacts to bintray.com.'
     static final String API_URL_DEFAULT = 'https://api.bintray.com'
-    public BintrayExtension extension
     public Project project
 
     private ConcurrentHashMap<String, Repository> repositories = new ConcurrentHashMap<>()
@@ -186,6 +186,86 @@ class BintrayUploadTask extends DefaultTask {
     {
         group = GROUP
         description = DESCRIPTION
+    }
+
+    void fromExtension(BintrayExtension extension, PackageConfig pkg) {
+        apiUrl = extension.apiUrl
+        user = extension.user
+        apiKey = extension.key
+        configurations = extension.configurations
+        publications = (extension.publications ?: []) + (pkg.publications ?: [])
+        filesSpec = extension.filesSpec
+        publish = extension.publish
+        override = extension.override
+        dryRun = extension.dryRun
+        userOrg = pkg.userOrg ?: extension.user
+        repoName = pkg.repo
+        packageName = pkg.name
+        packageDesc = pkg.desc
+        packageWebsiteUrl = pkg.websiteUrl
+        packageIssueTrackerUrl = pkg.issueTrackerUrl
+        packageVcsUrl = pkg.vcsUrl
+        packageGithubRepo = pkg.githubRepo
+        packageGithubReleaseNotesFile = pkg.githubReleaseNotesFile
+        packageLicenses = pkg.licenses
+        packageLabels = pkg.labels
+        packageAttributes = pkg.attributes
+        packagePublicDownloadNumbers = pkg.publicDownloadNumbers
+        debianDistribution = pkg.debian.distribution
+        debianComponent = pkg.debian.component
+        debianArchitecture = pkg.debian.architecture
+        versionName = pkg.version.name ?: project.version
+        versionDesc = pkg.version.desc
+        versionReleased = pkg.version.released
+        versionVcsTag = pkg.version.vcsTag ?: project.version
+        versionAttributes = pkg.version.attributes
+        signVersion = pkg.version.gpg.sign
+        gpgPassphrase = pkg.version.gpg.passphrase
+        syncToMavenCentral = pkg.version.mavenCentralSync.sync == null ?
+                true : pkg.version.mavenCentralSync.sync
+        ossUser = pkg.version.mavenCentralSync.user
+        ossPassword = pkg.version.mavenCentralSync.password
+        ossCloseRepo = pkg.version.mavenCentralSync.close
+
+        if (extension.configurations?.length) {
+            extension.configurations.each {
+                def configuration = project.configurations.findByName(it)
+                if (!configuration) {
+                    project.logger.warn "Configuration ${it} specified but does not exist in project {}.",
+                            project.path
+                } else {
+                    dependsOn(configuration.allArtifacts)
+                }
+            }
+            Upload installTask = project.tasks.withType(Upload)?.findByName('install')
+            if (installTask) {
+                dependsOn(installTask)
+            } else {
+                project.logger.warn "Configuration(s) specified but the install task does not exist in project {}.",
+                        project.path
+            }
+        }
+        if (extension.publications?.length) {
+            def publicationExt = project.extensions.findByType(PublishingExtension)
+            if (!publicationExt) {
+                project.logger.warn "Publications(s) specified but no publications exist in project {}.",
+                        project.path
+            } else {
+                extension.publications.each {
+                    Publication publication = publicationExt?.publications?.findByName(it)
+                    if (!publication) {
+                        project.logger.warn 'Publication {} not found in project {}.', it, project.path
+                    } else if (publication instanceof MavenPublication) {
+                        def taskName =
+                                "publish${it[0].toUpperCase()}${it.substring(1)}PublicationToMavenLocal"
+                        dependsOn(taskName)
+                    } else {
+                        project.logger.warn "{} can only use maven publications - skipping {}.",
+                                path, publication.name
+                    }
+                }
+            }
+        }
     }
 
     @TaskAction
