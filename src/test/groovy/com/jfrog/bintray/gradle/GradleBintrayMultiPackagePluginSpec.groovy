@@ -41,22 +41,23 @@ class GradleBintrayMultiPackagePluginSpec extends Specification {
             }
         }
 
-        project.bintray {
-            user = config.bintrayUser
-            key = config.bintrayKey
-            dryRun = true
-            pkg {
-                repo = 'repo1'
-                name = 'test-package1'
-                publications = ['testPublication1']
-            }
-            pkg {
-                repo = 'repo2'
-                name = 'test-package2'
-                publications = ['testPublication2']
+        project.afterEvaluate {
+            project.bintray {
+                user = config.bintrayUser
+                key = config.bintrayKey
+                dryRun = true
+                pkg {
+                    repo = 'repo1'
+                    name = 'test-package1'
+                    publications = ['testPublication1']
+                }
+                pkg {
+                    repo = 'repo2'
+                    name = 'test-package2'
+                    publications = ['testPublication2']
+                }
             }
         }
-
         project.evaluate()
 
         then:

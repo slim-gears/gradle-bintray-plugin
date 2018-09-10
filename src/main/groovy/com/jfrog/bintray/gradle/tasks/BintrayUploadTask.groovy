@@ -193,7 +193,7 @@ class BintrayUploadTask extends DefaultTask {
         user = extension.user
         apiKey = extension.key
         configurations = extension.configurations
-        publications = (extension.publications ?: []) + (pkg.publications ?: [])
+        publications = ((extension.publications ?: []) + (pkg.publications ?: [])).flatten()
         filesSpec = extension.filesSpec
         publish = extension.publish
         override = extension.override
@@ -227,9 +227,9 @@ class BintrayUploadTask extends DefaultTask {
         ossPassword = pkg.version.mavenCentralSync.password
         ossCloseRepo = pkg.version.mavenCentralSync.close
 
-        if (extension.configurations?.length) {
-            extension.configurations.each {
-                def configuration = project.configurations.findByName(it)
+        if (this.configurations?.length) {
+            this.configurations.each {
+                def configuration = project.configurations.findByName(it as String)
                 if (!configuration) {
                     project.logger.warn "Configuration ${it} specified but does not exist in project {}.",
                             project.path
@@ -245,14 +245,14 @@ class BintrayUploadTask extends DefaultTask {
                         project.path
             }
         }
-        if (extension.publications?.length) {
+        if (this.publications?.length) {
             def publicationExt = project.extensions.findByType(PublishingExtension)
             if (!publicationExt) {
                 project.logger.warn "Publications(s) specified but no publications exist in project {}.",
                         project.path
             } else {
-                extension.publications.each {
-                    Publication publication = publicationExt?.publications?.findByName(it)
+                this.publications.each {
+                    Publication publication = publicationExt?.publications?.findByName(it as String)
                     if (!publication) {
                         project.logger.warn 'Publication {} not found in project {}.', it, project.path
                     } else if (publication instanceof MavenPublication) {
@@ -282,7 +282,7 @@ class BintrayUploadTask extends DefaultTask {
                     } else {
                         logger.error("{}: Could not find configuration: {}.", path, it)
                     }
-                } else if (conf instanceof Configuration) {
+                } else if (it instanceof Configuration) {
                     return collectArtifacts((Configuration) it)
                 } else {
                     logger.error("{}: Unsupported configuration type: {}.", path, it.class)
@@ -298,7 +298,7 @@ class BintrayUploadTask extends DefaultTask {
                     } else {
                         logger.error("{}: Could not find publication: {}.", path, it);
                     }
-                } else if (conf instanceof MavenPublication) {
+                } else if (it instanceof MavenPublication) {
                     return collectArtifacts((Configuration) it)
                 } else {
                     logger.error("{}: Unsupported publication type: {}.", path, it.class)
