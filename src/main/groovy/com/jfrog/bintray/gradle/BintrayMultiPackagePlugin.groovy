@@ -1,5 +1,6 @@
 package com.jfrog.bintray.gradle
 
+import com.jfrog.bintray.gradle.tasks.BintrayPublishTask
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.BuildAdapter
 import org.gradle.api.Plugin
@@ -16,7 +17,7 @@ class BintrayMultiPackagePlugin implements Plugin<Project> {
             @Override
             void projectsEvaluated(Gradle gradle) {
                 super.projectsEvaluated(gradle)
-                def bintrayUploadTask = project.task('bintrayUpload', group: 'publishing')
+                def bintrayUploadTask = project.task(BintrayUploadTask.TASK_NAME, group: BintrayUploadTask.GROUP)
                 extension.packages.each { pkg ->
                     def taskName = "${pkg.name}BintrayUpload"
                     BintrayUploadTask packageUploadTask = project.tasks.create(name: taskName, type: BintrayUploadTask) as BintrayUploadTask
@@ -24,6 +25,12 @@ class BintrayMultiPackagePlugin implements Plugin<Project> {
                     packageUploadTask.fromExtension(extension, pkg)
                     bintrayUploadTask.dependsOn(packageUploadTask)
                 }
+
+                project.task(
+                        BintrayPublishTask.TASK_NAME,
+                        type: BintrayPublishTask,
+                        group: BintrayUploadTask.GROUP,
+                        dependsOn: bintrayUploadTask)
             }
         })
     }
