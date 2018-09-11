@@ -19,7 +19,7 @@ class BintrayMultiPackagePlugin implements Plugin<Project> {
                 super.projectsEvaluated(gradle)
                 def bintrayUploadTask = project.task(BintrayUploadTask.TASK_NAME, group: BintrayUploadTask.GROUP)
                 extension.packages.each { pkg ->
-                    def taskName = "${pkg.name}BintrayUpload"
+                    def taskName = toCamelCase(pkg.name) + 'BintrayUpload'
                     BintrayUploadTask packageUploadTask = project.tasks.create(name: taskName, type: BintrayUploadTask) as BintrayUploadTask
                     packageUploadTask.project = project
                     packageUploadTask.fromExtension(extension, pkg)
@@ -33,5 +33,9 @@ class BintrayMultiPackagePlugin implements Plugin<Project> {
                         dependsOn: bintrayUploadTask)
             }
         })
+    }
+
+    static String toCamelCase(String dashSeparated) {
+        return dashSeparated.replaceAll(/-\w/) { it[1].toUpperCase() }
     }
 }

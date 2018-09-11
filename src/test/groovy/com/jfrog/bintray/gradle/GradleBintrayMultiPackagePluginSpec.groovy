@@ -2,6 +2,7 @@ package com.jfrog.bintray.gradle
 
 import com.jfrog.bintray.gradle.tasks.BintrayUploadTask
 import org.gradle.api.Project
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert
 import org.junit.Rule
@@ -30,11 +31,11 @@ class GradleBintrayMultiPackagePluginSpec extends Specification {
         when:
         project.publishing {
             publications {
-                testPublication1 {
+                testPublication1(MavenPublication) {
                     groupId = 'group1'
                     artifactId = 'artifact1'
                 }
-                testPublication2 {
+                testPublication2(MavenPublication) {
                     groupId = 'group2'
                     artifactId = 'artifact2'
                 }
@@ -59,14 +60,15 @@ class GradleBintrayMultiPackagePluginSpec extends Specification {
             }
         }
         project.evaluate()
+        project.gradle.getBuildListenerBroadcaster().projectsEvaluated(project.gradle)
 
         then:
         Assert.assertEquals(2, project.bintray.packages.size())
-        Assert.assertNotNull(project.tasks.findByName('test-package1BintrayUpload'))
-        Assert.assertNotNull(project.tasks.findByName('test-package2BintrayUpload'))
+        Assert.assertNotNull(project.tasks.findByName('testPackage1BintrayUpload'))
+        Assert.assertNotNull(project.tasks.findByName('testPackage2BintrayUpload'))
 
-        def pkg1UploadTask = project.tasks.findByName('test-package1BintrayUpload') as BintrayUploadTask
-        def pkg2UploadTask = project.tasks.findByName('test-package2BintrayUpload') as BintrayUploadTask
+        def pkg1UploadTask = project.tasks.findByName('testPackage1BintrayUpload') as BintrayUploadTask
+        def pkg2UploadTask = project.tasks.findByName('testPackage2BintrayUpload') as BintrayUploadTask
 
         Assert.assertEquals('test-package1', pkg1UploadTask.packageName)
         Assert.assertEquals('repo1', pkg1UploadTask.repoName)
